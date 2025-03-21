@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "docapi"
+version = "0.1.0"
+description = "FastAPI backend for processing PDF documents and extracting markdown content"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "docapi"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.109.2"
+uvicorn = "^0.27.1"
+python-multipart = "^0.0.9"
+google-cloud-storage = "^2.14.0"
+docling = "^0.1.0"
+python-dotenv = "^1.0.1"
+pydantic = "^2.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "uvicorn main:app --reload" 
