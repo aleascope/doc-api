@@ -1,10 +1,5 @@
 [tool.poetry]
-name = "docapi"
-version = "0.1.0"
-description = "FastAPI backend for processing PDF documents and extracting markdown content"
-authors = ["Your Name <your.email@example.com>"]
-readme = "README.md"
-packages = [{include = "docapi"}]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.8"

@@ -1,6 +1,8 @@
 # Document Processing API
 
-A FastAPI service that processes PDF documents and converts them to markdown format, storing both files in Google Cloud Storage.
+A FastAPI service that processes PDF documents and:
+- converts them to markdown format using Docling
+- stores them (along with markdown version) in a Google Cloud Storage bucket
 
 ## Features
 
