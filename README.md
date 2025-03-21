@@ -1,26 +1,23 @@
-# PDF Processing API
+# Document Processing API
 
-A FastAPI backend service for processing PDF documents and extracting markdown content using docling. The service stores both the original PDF and the extracted markdown content in Google Cloud Storage.
+A FastAPI service that processes PDF documents and converts them to markdown format, storing both files in Google Cloud Storage.
 
 ## Features
 
-- PDF file upload endpoint
-- Document listing with filtering and pagination
-- Automatic markdown extraction using docling
-- Google Cloud Storage integration for file storage
+- PDF document upload and processing
+- Automatic conversion to markdown using docling
+- Storage in Google Cloud Storage
+- Document listing and retrieval
 - Health check endpoint
 
 ## Setup
 
-1. Install Poetry (if not already installed):
+1. Install dependencies:
 ```bash
-curl -sSL https://install.python-poetry.org | python3 -
+pip install fastapi uvicorn python-multipart google-cloud-storage python-dotenv docling
 ```
 
-2. Install dependencies:
-```bash
-poetry install
-```
+2. Create a `.env` file in the root directory:
 
 3. Set up Google Cloud Storage:
    - Create a Google Cloud project
@@ -32,7 +29,6 @@ poetry install
    - Copy `.env.example` to `.env`
    - Update the values in `.env` with your configuration:
      - Set `GCS_BUCKET_NAME` to your Google Cloud Storage bucket name
-     - Set `GOOGLE_APPLICATION_CREDENTIALS` to the path of your service account key JSON file
 
 ## Running the Application
 
@@ -51,42 +47,64 @@ The API will be available at `http://localhost:8000`
 
 ## API Endpoints
 
-### POST /upload/
-Upload a PDF file for processing. The endpoint will:
-- Store the original PDF in Google Cloud Storage
-- Extract markdown content using docling
-- Store the markdown in Google Cloud Storage
-- Return URLs for both files
+### Upload Document
+```http
+POST /upload/
+Content-Type: multipart/form-data
+```
+
+Example using curl:
+```bash
+curl -X POST "http://localhost:8000/upload/" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@example.pdf"
+```
 
 Example response:
 ```json
 {
     "message": "Document processed successfully",
-    "document_id": "uuid",
-    "pdf_url": "https://storage.googleapis.com/bucket/pdfs/uuid.pdf",
-    "markdown_url": "https://storage.googleapis.com/bucket/markdown/uuid.md"
+    "document_id": "550e8400-e29b-41d4-a716-446655440000",
+    "pdf_url": "https://storage.googleapis.com/your-bucket/pdfs/550e8400-e29b-41d4-a716-446655440000.pdf",
+    "markdown_url": "https://storage.googleapis.com/your-bucket/markdown/550e8400-e29b-41d4-a716-446655440000.md"
 }
 ```
 
-### GET /documents/
-List processed documents stored in the bucket. Returns both PDF and markdown URLs for each document.
+### List Documents
+```http
+GET /documents/?limit=10&prefix=test
+```
 
-Query Parameters:
-- `limit` (optional): Maximum number of documents to return (default: 50, max: 100)
-- `prefix` (optional): Filter documents by prefix
+Example using curl:
+```bash
+curl "http://localhost:8000/documents/?limit=10"
+```
 
 Example response:
 ```json
 [
     {
-        "document_id": "uuid",
-        "pdf_url": "https://storage.googleapis.com/bucket/pdfs/uuid.pdf",
-        "markdown_url": "https://storage.googleapis.com/bucket/markdown/uuid.md",
-        "created_at": "2024-02-20T10:30:00Z",
+        "document_id": "550e8400-e29b-41d4-a716-446655440000",
+        "pdf_url": "https://storage.googleapis.com/your-bucket/pdfs/550e8400-e29b-41d4-a716-446655440000.pdf",
+        "markdown_url": "https://storage.googleapis.com/your-bucket/markdown/550e8400-e29b-41d4-a716-446655440000.md",
+        "created_at": "2024-03-15T10:30:00.000Z",
         "size_bytes": 1234567
-    }
+    },
+    // ... more documents
 ]
 ```
+
+### Download PDF
+```http
+GET /documents/{document_id}/pdf
+```
+
+Example using curl:
+```bash
+curl -O "http://localhost:8000/documents/550e8400-e29b-41d4-a716-446655440000/pdf"
+```
+
+Example using browser:
 
 ### GET /health
 Health check endpoint to verify the service is running.

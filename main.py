@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse, Response
 from google.cloud import storage
 from docling.document_converter import DocumentConverter  # Updated import
 import os
@@ -131,6 +132,58 @@ async def list_documents(
         
         return documents
         
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/documents/{document_id}/pdf")
+async def get_pdf(document_id: str):
+    """
+    Download the original PDF file
+    """
+    try:
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(f"pdfs/{document_id}.pdf")
+        
+        if not blob.exists():
+            raise HTTPException(status_code=404, detail="PDF file not found")
+        
+        # Get the file content
+        content = blob.download_as_bytes()
+        
+        # Return the PDF file as a streaming response
+        return StreamingResponse(
+            iter([content]),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{document_id}.pdf"'
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/documents/{document_id}/markdown")
+async def get_markdown(document_id: str):
+    """
+    Retrieve the parsed markdown content
+    """
+    try:
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(f"markdown/{document_id}.md")
+        
+        if not blob.exists():
+            raise HTTPException(status_code=404, detail="Markdown file not found")
+        
+        # Get the markdown content
+        content = blob.download_as_string().decode('utf-8')
+        
+        # Return the markdown content
+        return Response(
+            content=content,
+            media_type="text/markdown",
+            headers={
+                "Content-Disposition": f'attachment; filename="{document_id}.md"'
+            }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
